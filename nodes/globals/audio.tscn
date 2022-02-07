@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://nodes/globals/audio.gd" type="Script" id=1]
+
+[node name="Audio" type="Node"]
+script = ExtResource( 1 )
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+bus = "Music"
+
+[node name="Sounds" type="AudioStreamPlayer" parent="."]
+bus = "Sounds"
+
+[connection signal="finished" from="Sounds" to="." method="_on_Sounds_finished"]
