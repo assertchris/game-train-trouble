@@ -3,6 +3,9 @@ extends "res://nodes/screens/screen.gd"
 export var CactusScene : PackedScene
 export var RockScene : PackedScene
 export var DirtScene : PackedScene
+export var BulletScene : PackedScene
+export var BucketScene : PackedScene
+export var FlameScene : PackedScene
 
 var is_playing := true
 var velocity := 0
@@ -14,6 +17,11 @@ var decrease_wait_time_by := 0.01
 var wheel_bar_state : int = WHEEL_BAR_STATES.ONE
 var remaining_doodad_timeout_ticks := 0
 var additional_doodad_timeout_ticks := 40
+var is_overlapping_engine := false
+var is_overlapping_water := false
+var is_overlapping_ammo := false
+var is_shooting := false
+var is_reloading := false
 
 enum WHEEL_BAR_STATES {
 	ONE,
@@ -22,14 +30,17 @@ enum WHEEL_BAR_STATES {
 	FOUR,
 }
 
+onready var _player := $Player
 onready var _wheel_bar_timer := $WheelBarTimer
 onready var _wheel_bar := $WheelBar
 onready var _doodad_positions := $DoodadPositions
 onready var _doodads := $Doodads
+onready var _ammo := $Ammo
 
 func _ready() -> void:
 	randomize()
 	_wheel_bar_timer.wait_time = start_wait_time
+	Variables.current_player = _player
 
 func _process(delta: float) -> void:
 	for child in get_children():
@@ -88,3 +99,62 @@ func spawn_doodad() -> void:
 		doodad.global_position = _doodad_positions.get_children()[i].global_position
 
 		remaining_doodad_timeout_ticks += additional_doodad_timeout_ticks
+
+func _on_EngineArea_body_entered(body: Node) -> void:
+	if body is Player:
+		is_overlapping_engine = true
+
+func _on_EngineArea_body_exited(body: Node) -> void:
+	if body is Player:
+		is_overlapping_engine = false
+
+func _on_WaterArea_body_entered(body: Node) -> void:
+	if body is Player:
+		is_overlapping_water = true
+
+func _on_WaterArea_body_exited(body: Node) -> void:
+	if body is Player:
+		is_overlapping_water = false
+
+func _on_AmmoArea_body_entered(body: Node) -> void:
+	if body is Player:
+		is_overlapping_ammo = true
+
+func _on_AmmoArea_body_exited(body: Node) -> void:
+	if body is Player:
+		is_overlapping_ammo = false
+
+func _unhandled_key_input(event: InputEventKey) -> void:
+	if event.is_action("ui_accept"):
+		if is_overlapping_engine and Variables.current_player.carrying == Player.CARRYING.NOTHING:
+			pass # add coal
+
+		if is_overlapping_water and Variables.current_player.carrying == Player.CARRYING.BUCKET and not Variables.current_player.has_water:
+			print("get water")
+			Variables.current_player.has_water = true
+
+		if is_overlapping_engine and Variables.current_player.carrying == Player.CARRYING.BUCKET and Variables.current_player.has_water:
+			print("lose water")
+			Variables.current_player.has_water = false
+			pass # add water
+
+		if is_overlapping_ammo and Variables.current_player.carrying == Player.CARRYING.GUN:
+			is_reloading = true
+			Variables.current_player.reload()
+			yield(Variables.current_player, "has_reloaded")
+			is_reloading = false
+
+	if event.is_action("ui_select"):
+		if Player.CARRYING.GUN and Variables.current_player.ammo_count > 0 and not is_shooting:
+			is_shooting = true
+			Variables.current_player.bang()
+			yield(Variables.current_player, "has_banged")
+			is_shooting = false
+
+func _on_InterfaceTimer_timeout() -> void:
+	while _ammo.get_child_count() > 0:
+		_ammo.remove_child(_ammo.get_child(0))
+
+	while _ammo.get_child_count() < Variables.current_player.ammo_count:
+		var new_ammo = BulletScene.instance()
+		_ammo.add_child(new_ammo)

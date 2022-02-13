@@ -34,6 +34,7 @@ default_bus_layout="res://resources/bus-layout.tres"
 [autoload]
 
 Audio="*res://nodes/globals/audio.tscn"
+Variables="*res://nodes/globals/variables.tscn"
 
 [debug]
 

@@ -1,4 +1,4 @@
-extends Node2D
+extends Control
 
 var is_overlapped_by : Player = null
 
@@ -15,7 +15,7 @@ func _unhandled_key_input(event: InputEventKey) -> void:
 		if is_overlapped_by.carrying == Player.CARRYING.GUN:
 			var new_gun = load("res://nodes/objects/gun.tscn").instance()
 			is_overlapped_by.get_parent().find_node("Interactables").add_child(new_gun)
-			new_gun.global_position = is_overlapped_by.global_position
+			new_gun.rect_global_position = is_overlapped_by.global_position
 
 		is_overlapped_by.carrying = Player.CARRYING.BUCKET
 		queue_free()

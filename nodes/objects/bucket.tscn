@@ -6,9 +6,11 @@
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 2.5, 2.5 )
 
-[node name="Bucket" type="Node2D"]
-position = Vector2( 0, -2 )
+[node name="Bucket" type="Control"]
 script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Sprite" type="Sprite" parent="."]
 texture = ExtResource( 1 )
