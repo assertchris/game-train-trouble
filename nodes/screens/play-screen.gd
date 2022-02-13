@@ -6,9 +6,10 @@ export var DirtScene : PackedScene
 
 var is_playing := true
 var velocity := 0
-var acceleration := 5
+var acceleration := 3
 var max_speed := 150
-var start_wait_time := 2.0
+var start_wait_time := 1.5
+var mix_wait_time := 0.03
 var decrease_wait_time_by := 0.01
 var wheel_bar_state : int = WHEEL_BAR_STATES.ONE
 var remaining_doodad_timeout_ticks := 0
@@ -36,7 +37,7 @@ func _process(delta: float) -> void:
 			child.global_position.x = round(child.global_position.x)
 
 func _on_WheelBarTimer_timeout() -> void:
-	_wheel_bar_timer.wait_time = start_wait_time - (velocity * decrease_wait_time_by)
+	_wheel_bar_timer.wait_time = clamp(start_wait_time - (velocity * decrease_wait_time_by), mix_wait_time, start_wait_time)
 	velocity = clamp(velocity + acceleration, 0, max_speed)
 
 	animate_wheel_bar()
