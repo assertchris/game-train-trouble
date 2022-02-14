@@ -1,7 +1,7 @@
 extends KinematicBody2D
 class_name Player
 
-signal has_banged
+signal has_shot
 signal has_reloaded
 
 export var speed := 15
@@ -39,12 +39,12 @@ func _process(_delta: float) -> void:
 		CARRYING.GUN:
 			_sprite.texture = carrying_gun_texture
 
-func bang() -> void:
+func shoot() -> void:
 	_bang_sprite.visible = true
 	ammo_count -= 1
 	yield(get_tree().create_timer(0.5), "timeout")
 	_bang_sprite.visible = false
-	emit_signal("has_banged")
+	emit_signal("has_shot")
 
 func reload() -> void:
 	ammo_count = 6

@@ -6,6 +6,7 @@ export var DirtScene : PackedScene
 export var BulletScene : PackedScene
 export var BucketScene : PackedScene
 export var FlameScene : PackedScene
+export var BanditScene : PackedScene
 
 var is_playing := true
 var velocity := 0
@@ -20,8 +21,16 @@ var additional_doodad_timeout_ticks := 40
 var is_overlapping_engine := false
 var is_overlapping_water := false
 var is_overlapping_ammo := false
+var is_overlapping_left := false
+var is_overlapping_middle := false
+var is_overlapping_right := false
 var is_shooting := false
 var is_reloading := false
+var water_count := 3
+var coal_count := 3
+var can_spawn_bandits := false
+var spawned_bandit : Bandit = null
+var spawned_bandit_position : int
 
 enum WHEEL_BAR_STATES {
 	ONE,
@@ -30,12 +39,21 @@ enum WHEEL_BAR_STATES {
 	FOUR,
 }
 
+enum BANDIT_POSITIONS {
+	LEFT = 0,
+	MIDDLE = 1,
+	RIGHT = 2,
+}
+
 onready var _player := $Player
 onready var _wheel_bar_timer := $WheelBarTimer
 onready var _wheel_bar := $WheelBar
 onready var _doodad_positions := $DoodadPositions
 onready var _doodads := $Doodads
-onready var _ammo := $Ammo
+onready var _ammo := $Interface/Ammo
+onready var _bandit_positions := $BanditPositions
+onready var _bandits := $Bandits
+onready var _bandit_shoot_timer := $BanditShootTimer
 
 func _ready() -> void:
 	randomize()
@@ -130,11 +148,9 @@ func _unhandled_key_input(event: InputEventKey) -> void:
 			pass # add coal
 
 		if is_overlapping_water and Variables.current_player.carrying == Player.CARRYING.BUCKET and not Variables.current_player.has_water:
-			print("get water")
 			Variables.current_player.has_water = true
 
 		if is_overlapping_engine and Variables.current_player.carrying == Player.CARRYING.BUCKET and Variables.current_player.has_water:
-			print("lose water")
 			Variables.current_player.has_water = false
 			pass # add water
 
@@ -147,9 +163,24 @@ func _unhandled_key_input(event: InputEventKey) -> void:
 	if event.is_action("ui_select"):
 		if Player.CARRYING.GUN and Variables.current_player.ammo_count > 0 and not is_shooting:
 			is_shooting = true
-			Variables.current_player.bang()
-			yield(Variables.current_player, "has_banged")
+			Variables.current_player.shoot()
+			yield(Variables.current_player, "has_shot")
 			is_shooting = false
+
+			if spawned_bandit:
+				if spawned_bandit_position == BANDIT_POSITIONS.LEFT and is_overlapping_left:
+					spawned_bandit.health -= round(rand_range(1, 2))
+
+				if spawned_bandit_position == BANDIT_POSITIONS.MIDDLE and is_overlapping_middle:
+					spawned_bandit.health -= round(rand_range(1, 2))
+
+				if spawned_bandit_position == BANDIT_POSITIONS.RIGHT and is_overlapping_right:
+					spawned_bandit.health -= round(rand_range(1, 2))
+
+				if spawned_bandit.health < 1:
+					_bandit_shoot_timer.stop()
+					spawned_bandit.queue_free()
+					spawned_bandit = null
 
 func _on_InterfaceTimer_timeout() -> void:
 	while _ammo.get_child_count() > 0:
@@ -158,3 +189,44 @@ func _on_InterfaceTimer_timeout() -> void:
 	while _ammo.get_child_count() < Variables.current_player.ammo_count:
 		var new_ammo = BulletScene.instance()
 		_ammo.add_child(new_ammo)
+
+func _on_BanditTimer_timeout() -> void:
+	if not can_spawn_bandits:
+		can_spawn_bandits = true
+		return
+
+	if spawned_bandit:
+		return
+
+	var new_bandit = BanditScene.instance()
+	_bandits.add_child(new_bandit)
+
+	spawned_bandit_position = randi() % 3
+
+	var position = _bandit_positions.get_children()[spawned_bandit_position]
+	new_bandit.global_position = position.global_position
+
+	_bandit_shoot_timer.start()
+	spawned_bandit = new_bandit
+
+func _on_BanditShootTimer_timeout() -> void:
+	if spawned_bandit:
+		spawned_bandit.shoot()
+
+func _on_LeftArea_body_entered(body: Node) -> void:
+	is_overlapping_left = true
+
+func _on_LeftArea_body_exited(body: Node) -> void:
+	is_overlapping_left = false
+
+func _on_MiddleArea_body_entered(body: Node) -> void:
+	is_overlapping_middle = true
+
+func _on_MiddleArea_body_exited(body: Node) -> void:
+	is_overlapping_middle = false
+
+func _on_RightArea_body_entered(body: Node) -> void:
+	is_overlapping_right = true
+
+func _on_RightArea_body_exited(body: Node) -> void:
+	is_overlapping_right = false
