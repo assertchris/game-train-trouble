@@ -8,6 +8,8 @@ onready var _animator := $Animator
 
 export var health := 4
 
+var running_away := false
+
 func _ready() -> void:
 	_bang_sprite.visible = false
 	_animator.play("MoveUp")
@@ -18,6 +20,13 @@ func shoot() -> void:
 	_bang_sprite.visible = false
 	emit_signal("has_shot")
 
+func retreat() -> void:
+	running_away = true
+	_animator.play_backwards("MoveUp")
+
 func _on_Animator_animation_finished(anim_name: String) -> void:
 	if anim_name == "MoveUp":
-		_animator.play("Bob")
+		if running_away:
+			queue_free()
+		else:
+			_animator.play("Bob")

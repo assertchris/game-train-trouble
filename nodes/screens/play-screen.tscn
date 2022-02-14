@@ -101,15 +101,7 @@ position = Vector2( 42.5, 25 )
 [node name="WheelBar" parent="." index="5" instance=ExtResource( 7 )]
 position = Vector2( 61, 32 )
 
-[node name="WheelBarTimer" type="Timer" parent="." index="6"]
-wait_time = 2.0
-autostart = true
-
-[node name="DoodadSpawnTimer" type="Timer" parent="." index="7"]
-wait_time = 0.5
-autostart = true
-
-[node name="Interactables" type="Node2D" parent="." index="8"]
+[node name="Interactables" type="Node2D" parent="." index="6"]
 __meta__ = {
 "_edit_lock_": true
 }
@@ -126,10 +118,10 @@ margin_top = 19.0
 margin_right = 18.0
 margin_bottom = 19.0
 
-[node name="Player" parent="." index="9" instance=ExtResource( 4 )]
+[node name="Player" parent="." index="7" instance=ExtResource( 4 )]
 position = Vector2( 53, 19 )
 
-[node name="Areas" type="Node2D" parent="." index="10"]
+[node name="Areas" type="Node2D" parent="." index="8"]
 __meta__ = {
 "_edit_lock_": true
 }
@@ -203,7 +195,7 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Interface" type="Control" parent="." index="11"]
+[node name="Interface" type="Control" parent="." index="9"]
 margin_right = 84.0
 margin_bottom = 13.0
 __meta__ = {
@@ -220,19 +212,27 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="InterfaceTimer" type="Timer" parent="." index="12"]
+[node name="Timers" type="Node" parent="." index="10"]
+
+[node name="WheelBarTimer" type="Timer" parent="Timers" index="0"]
+wait_time = 2.0
+autostart = true
+
+[node name="DoodadSpawnTimer" type="Timer" parent="Timers" index="1"]
+wait_time = 0.5
+autostart = true
+
+[node name="InterfaceTimer" type="Timer" parent="Timers" index="2"]
 wait_time = 0.25
 autostart = true
 
-[node name="BanditTimer" type="Timer" parent="." index="13"]
+[node name="BanditTimer" type="Timer" parent="Timers" index="3"]
 wait_time = 10.0
 autostart = true
 
-[node name="BanditShootTimer" type="Timer" parent="." index="14"]
+[node name="BanditShootTimer" type="Timer" parent="Timers" index="4"]
 wait_time = 3.0
 
-[connection signal="timeout" from="WheelBarTimer" to="." method="_on_WheelBarTimer_timeout"]
-[connection signal="timeout" from="DoodadSpawnTimer" to="." method="_on_DoodadSpawnTimer_timeout"]
 [connection signal="body_entered" from="Areas/EngineArea" to="." method="_on_EngineArea_body_entered"]
 [connection signal="body_exited" from="Areas/EngineArea" to="." method="_on_EngineArea_body_exited"]
 [connection signal="body_entered" from="Areas/WaterArea" to="." method="_on_WaterArea_body_entered"]
@@ -245,6 +245,8 @@ wait_time = 3.0
 [connection signal="body_exited" from="Areas/MiddleArea" to="." method="_on_MiddleArea_body_exited"]
 [connection signal="body_entered" from="Areas/RightArea" to="." method="_on_RightArea_body_entered"]
 [connection signal="body_exited" from="Areas/RightArea" to="." method="_on_RightArea_body_exited"]
-[connection signal="timeout" from="InterfaceTimer" to="." method="_on_InterfaceTimer_timeout"]
-[connection signal="timeout" from="BanditTimer" to="." method="_on_BanditTimer_timeout"]
-[connection signal="timeout" from="BanditShootTimer" to="." method="_on_BanditShootTimer_timeout"]
+[connection signal="timeout" from="Timers/WheelBarTimer" to="." method="_on_WheelBarTimer_timeout"]
+[connection signal="timeout" from="Timers/DoodadSpawnTimer" to="." method="_on_DoodadSpawnTimer_timeout"]
+[connection signal="timeout" from="Timers/InterfaceTimer" to="." method="_on_InterfaceTimer_timeout"]
+[connection signal="timeout" from="Timers/BanditTimer" to="." method="_on_BanditTimer_timeout"]
+[connection signal="timeout" from="Timers/BanditShootTimer" to="." method="_on_BanditShootTimer_timeout"]

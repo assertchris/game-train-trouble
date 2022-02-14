@@ -46,14 +46,14 @@ enum BANDIT_POSITIONS {
 }
 
 onready var _player := $Player
-onready var _wheel_bar_timer := $WheelBarTimer
+onready var _wheel_bar_timer := $Timers/WheelBarTimer
 onready var _wheel_bar := $WheelBar
 onready var _doodad_positions := $DoodadPositions
 onready var _doodads := $Doodads
 onready var _ammo := $Interface/Ammo
 onready var _bandit_positions := $BanditPositions
 onready var _bandits := $Bandits
-onready var _bandit_shoot_timer := $BanditShootTimer
+onready var _bandit_shoot_timer := $Timers/BanditShootTimer
 
 func _ready() -> void:
 	randomize()
@@ -179,7 +179,7 @@ func _unhandled_key_input(event: InputEventKey) -> void:
 
 				if spawned_bandit.health < 1:
 					_bandit_shoot_timer.stop()
-					spawned_bandit.queue_free()
+					spawned_bandit.retreat()
 					spawned_bandit = null
 
 func _on_InterfaceTimer_timeout() -> void:
