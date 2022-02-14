@@ -12,10 +12,11 @@ func stop_music() -> void:
 	_music.stop()
 
 func play_sound(sound_stream: AudioStream) -> void:
-	AudioServer.set_bus_mute(1, true)
+	# AudioServer.set_bus_mute(1, true)
 	_sounds.stop()
 	_sounds.stream = sound_stream
 	_sounds.play()
 
 func _on_Sounds_finished() -> void:
-	AudioServer.set_bus_mute(1, false)
+	# AudioServer.set_bus_mute(1, false)
+	pass

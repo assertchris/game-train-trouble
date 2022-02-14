@@ -8,6 +8,10 @@ export var BucketScene : PackedScene
 export var FlameScene : PackedScene
 export var BanditScene : PackedScene
 export var GunScene : PackedScene
+export var MusicAudioStream : AudioStream
+export var RefillAudioStream : AudioStream
+export var ShotAudioStream : AudioStream
+export var GameOverAudioStream : AudioStream
 
 var velocity := 0
 var acceleration := 3
@@ -68,6 +72,8 @@ func _ready() -> void:
 	reset()
 
 func reset() -> void:
+	# Audio.play_music(MusicAudioStream)
+
 	if spawned_bandit:
 		spawned_bandit.queue_free()
 		spawned_bandit = null
@@ -154,6 +160,7 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept"):
 		if is_overlapping_right and Variables.current_player.carrying == Player.CARRYING.NOTHING and not is_adding_coal and coal_count < 3:
 			coal_count += 1
+			Audio.play_sound(RefillAudioStream)
 			is_adding_coal = true
 			yield(get_tree().create_timer(1.0), "timeout")
 			is_adding_coal = false
@@ -164,6 +171,7 @@ func _input(event: InputEvent) -> void:
 		if is_overlapping_right and Variables.current_player.carrying == Player.CARRYING.BUCKET and Variables.current_player.has_water and not is_adding_water and water_count < 3:
 			Variables.current_player.has_water = false
 			water_count += 1
+			Audio.play_sound(RefillAudioStream)
 			is_adding_water = true
 			yield(get_tree().create_timer(1.0), "timeout")
 			is_adding_water = false
@@ -171,6 +179,7 @@ func _input(event: InputEvent) -> void:
 		if is_overlapping_left and Variables.current_player.carrying == Player.CARRYING.GUN:
 			is_reloading = true
 			Variables.current_player.reload()
+			Audio.play_sound(RefillAudioStream)
 			yield(Variables.current_player, "has_reloaded")
 			is_reloading = false
 
@@ -196,6 +205,7 @@ func _input(event: InputEvent) -> void:
 		if Variables.current_player.carrying == Player.CARRYING.GUN and Variables.current_player.ammo_count > 0 and not is_shooting:
 			is_shooting = true
 			Variables.current_player.shoot()
+			Audio.play_sound(ShotAudioStream)
 			yield(Variables.current_player, "has_shot")
 			is_shooting = false
 
@@ -238,6 +248,7 @@ func _on_InterfaceTimer_timeout() -> void:
 
 	_percentage.rect_size = Vector2(round((train_health / 100.0) * 78), 2)
 	_game_over.visible = Variables.is_game_over
+	Audio.stop_music()
 
 func _on_BanditTimer_timeout() -> void:
 	if Variables.is_game_over:
@@ -267,10 +278,12 @@ func _on_BanditShootTimer_timeout() -> void:
 
 	if spawned_bandit:
 		spawned_bandit.shoot()
+		Audio.play_sound(ShotAudioStream)
 		train_health -= 2
 
 		if train_health < 1:
 			Variables.is_game_over = true
+			Audio.play_sound(GameOverAudioStream)
 
 func _on_LeftArea_body_entered(body: Node) -> void:
 	is_overlapping_left = true
@@ -298,6 +311,7 @@ func _on_WaterTimer_timeout() -> void:
 
 	if water_count < 1:
 		Variables.is_game_over = true
+		Audio.play_sound(GameOverAudioStream)
 
 func _on_CoalTimer_timeout() -> void:
 	if Variables.is_game_over:
@@ -307,3 +321,4 @@ func _on_CoalTimer_timeout() -> void:
 
 	if coal_count < 1:
 		Variables.is_game_over = true
+		Audio.play_sound(GameOverAudioStream)

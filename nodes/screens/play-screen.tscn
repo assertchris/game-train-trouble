@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=25 format=2]
 
 [ext_resource path="res://nodes/screens/screen.tscn" type="PackedScene" id=1]
 [ext_resource path="res://nodes/screens/play-screen.gd" type="Script" id=2]
@@ -15,6 +15,10 @@
 [ext_resource path="res://nodes/objects/bandit.tscn" type="PackedScene" id=13]
 [ext_resource path="res://images/health-bar-background.png" type="Texture" id=14]
 [ext_resource path="res://images/game-over.png" type="Texture" id=15]
+[ext_resource path="res://audio/refill.wav" type="AudioStream" id=16]
+[ext_resource path="res://audio/shot.wav" type="AudioStream" id=17]
+[ext_resource path="res://audio/music.wav" type="AudioStream" id=18]
+[ext_resource path="res://audio/game-over.wav" type="AudioStream" id=19]
 
 [sub_resource type="RectangleShape2D" id=6]
 extents = Vector2( 12, 5 )
@@ -41,6 +45,10 @@ BucketScene = ExtResource( 9 )
 FlameScene = ExtResource( 12 )
 BanditScene = ExtResource( 13 )
 GunScene = ExtResource( 10 )
+MusicAudioStream = ExtResource( 18 )
+RefillAudioStream = ExtResource( 16 )
+ShotAudioStream = ExtResource( 17 )
+GameOverAudioStream = ExtResource( 19 )
 
 [node name="DoodadPositions" type="Node2D" parent="." index="0"]
 __meta__ = {
