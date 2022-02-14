@@ -7,8 +7,8 @@ export var BulletScene : PackedScene
 export var BucketScene : PackedScene
 export var FlameScene : PackedScene
 export var BanditScene : PackedScene
+export var GunScene : PackedScene
 
-var is_playing := true
 var velocity := 0
 var acceleration := 3
 var max_speed := 150
@@ -18,9 +18,6 @@ var decrease_wait_time_by := 0.01
 var wheel_bar_state : int = WHEEL_BAR_STATES.ONE
 var remaining_doodad_timeout_ticks := 0
 var additional_doodad_timeout_ticks := 40
-var is_overlapping_engine := false
-var is_overlapping_water := false
-var is_overlapping_ammo := false
 var is_overlapping_left := false
 var is_overlapping_middle := false
 var is_overlapping_right := false
@@ -31,6 +28,11 @@ var coal_count := 3
 var can_spawn_bandits := false
 var spawned_bandit : Bandit = null
 var spawned_bandit_position : int
+var is_adding_water := false
+var is_adding_coal := false
+var is_handling_bucket := false
+var is_handling_gun := false
+var train_health := 100
 
 enum WHEEL_BAR_STATES {
 	ONE,
@@ -51,14 +53,32 @@ onready var _wheel_bar := $WheelBar
 onready var _doodad_positions := $DoodadPositions
 onready var _doodads := $Doodads
 onready var _ammo := $Interface/Ammo
+onready var _water := $Interface/Water
+onready var _coal := $Interface/Coal
 onready var _bandit_positions := $BanditPositions
 onready var _bandits := $Bandits
 onready var _bandit_shoot_timer := $Timers/BanditShootTimer
+onready var _interactables := $Interactables
+onready var _percentage := $Interface/HealthBar/Percentage
+onready var _game_over := $Interface/GameOver
 
 func _ready() -> void:
 	randomize()
-	_wheel_bar_timer.wait_time = start_wait_time
 	Variables.current_player = _player
+	reset()
+
+func reset() -> void:
+	if spawned_bandit:
+		spawned_bandit.queue_free()
+		spawned_bandit = null
+
+	can_spawn_bandits = false
+	_wheel_bar_timer.wait_time = start_wait_time
+	Variables.is_game_over = false
+	velocity = 0
+	coal_count = 3
+	water_count = 3
+	train_health = 100
 
 func _process(delta: float) -> void:
 	for child in get_children():
@@ -66,6 +86,9 @@ func _process(delta: float) -> void:
 			child.global_position.x = round(child.global_position.x)
 
 func _on_WheelBarTimer_timeout() -> void:
+	if Variables.is_game_over:
+		return
+
 	_wheel_bar_timer.wait_time = clamp(start_wait_time - (velocity * decrease_wait_time_by), mix_wait_time, start_wait_time)
 	velocity = clamp(velocity + acceleration, 0, max_speed)
 
@@ -118,50 +141,59 @@ func spawn_doodad() -> void:
 
 		remaining_doodad_timeout_ticks += additional_doodad_timeout_ticks
 
-func _on_EngineArea_body_entered(body: Node) -> void:
-	if body is Player:
-		is_overlapping_engine = true
+func _input(event: InputEvent) -> void:
+	if not event is InputEventKey:
+		return
 
-func _on_EngineArea_body_exited(body: Node) -> void:
-	if body is Player:
-		is_overlapping_engine = false
+	if Variables.is_game_over and (event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select")):
+		reset()
 
-func _on_WaterArea_body_entered(body: Node) -> void:
-	if body is Player:
-		is_overlapping_water = true
+	if Variables.is_game_over:
+		return
 
-func _on_WaterArea_body_exited(body: Node) -> void:
-	if body is Player:
-		is_overlapping_water = false
+	if event.is_action_pressed("ui_accept"):
+		if is_overlapping_right and Variables.current_player.carrying == Player.CARRYING.NOTHING and not is_adding_coal and coal_count < 3:
+			coal_count += 1
+			is_adding_coal = true
+			yield(get_tree().create_timer(1.0), "timeout")
+			is_adding_coal = false
 
-func _on_AmmoArea_body_entered(body: Node) -> void:
-	if body is Player:
-		is_overlapping_ammo = true
-
-func _on_AmmoArea_body_exited(body: Node) -> void:
-	if body is Player:
-		is_overlapping_ammo = false
-
-func _unhandled_key_input(event: InputEventKey) -> void:
-	if event.is_action("ui_accept"):
-		if is_overlapping_engine and Variables.current_player.carrying == Player.CARRYING.NOTHING:
-			pass # add coal
-
-		if is_overlapping_water and Variables.current_player.carrying == Player.CARRYING.BUCKET and not Variables.current_player.has_water:
+		if is_overlapping_middle and Variables.current_player.carrying == Player.CARRYING.BUCKET and not Variables.current_player.has_water:
 			Variables.current_player.has_water = true
 
-		if is_overlapping_engine and Variables.current_player.carrying == Player.CARRYING.BUCKET and Variables.current_player.has_water:
+		if is_overlapping_right and Variables.current_player.carrying == Player.CARRYING.BUCKET and Variables.current_player.has_water and not is_adding_water and water_count < 3:
 			Variables.current_player.has_water = false
-			pass # add water
+			water_count += 1
+			is_adding_water = true
+			yield(get_tree().create_timer(1.0), "timeout")
+			is_adding_water = false
 
-		if is_overlapping_ammo and Variables.current_player.carrying == Player.CARRYING.GUN:
+		if is_overlapping_left and Variables.current_player.carrying == Player.CARRYING.GUN:
 			is_reloading = true
 			Variables.current_player.reload()
 			yield(Variables.current_player, "has_reloaded")
 			is_reloading = false
 
-	if event.is_action("ui_select"):
-		if Player.CARRYING.GUN and Variables.current_player.ammo_count > 0 and not is_shooting:
+		if (is_overlapping_left or is_overlapping_middle) and Variables.current_player.carrying == Player.CARRYING.BUCKET and not is_handling_bucket:
+			var new_bucket = BucketScene.instance()
+			_interactables.add_child(new_bucket)
+			new_bucket.rect_global_position = Variables.current_player.global_position
+			Variables.current_player.carrying = Player.CARRYING.NOTHING
+			is_handling_bucket = true
+			yield(get_tree().create_timer(0.5), "timeout")
+			is_handling_bucket = false
+
+		if (is_overlapping_middle or is_overlapping_right) and Variables.current_player.carrying == Player.CARRYING.GUN and not is_handling_gun:
+			var new_gun = GunScene.instance()
+			_interactables.add_child(new_gun)
+			new_gun.rect_global_position = Variables.current_player.global_position
+			Variables.current_player.carrying = Player.CARRYING.NOTHING
+			is_handling_gun = true
+			yield(get_tree().create_timer(0.5), "timeout")
+			is_handling_gun = false
+
+	if event.is_action_pressed("ui_select"):
+		if Variables.current_player.carrying == Player.CARRYING.GUN and Variables.current_player.ammo_count > 0 and not is_shooting:
 			is_shooting = true
 			Variables.current_player.shoot()
 			yield(Variables.current_player, "has_shot")
@@ -190,7 +222,27 @@ func _on_InterfaceTimer_timeout() -> void:
 		var new_ammo = BulletScene.instance()
 		_ammo.add_child(new_ammo)
 
+	while _water.get_child_count() > 0:
+		_water.remove_child(_water.get_child(0))
+
+	while _water.get_child_count() < water_count:
+		var new_water = BucketScene.instance()
+		_water.add_child(new_water)
+
+	while _coal.get_child_count() > 0:
+		_coal.remove_child(_coal.get_child(0))
+
+	while _coal.get_child_count() < coal_count:
+		var new_flame = FlameScene.instance()
+		_coal.add_child(new_flame)
+
+	_percentage.rect_size = Vector2(round((train_health / 100.0) * 78), 2)
+	_game_over.visible = Variables.is_game_over
+
 func _on_BanditTimer_timeout() -> void:
+	if Variables.is_game_over:
+		return
+
 	if not can_spawn_bandits:
 		can_spawn_bandits = true
 		return
@@ -210,8 +262,15 @@ func _on_BanditTimer_timeout() -> void:
 	spawned_bandit = new_bandit
 
 func _on_BanditShootTimer_timeout() -> void:
+	if Variables.is_game_over:
+		return
+
 	if spawned_bandit:
 		spawned_bandit.shoot()
+		train_health -= 2
+
+		if train_health < 1:
+			Variables.is_game_over = true
 
 func _on_LeftArea_body_entered(body: Node) -> void:
 	is_overlapping_left = true
@@ -230,3 +289,21 @@ func _on_RightArea_body_entered(body: Node) -> void:
 
 func _on_RightArea_body_exited(body: Node) -> void:
 	is_overlapping_right = false
+
+func _on_WaterTimer_timeout() -> void:
+	if Variables.is_game_over:
+		return
+
+	water_count -= 1
+
+	if water_count < 1:
+		Variables.is_game_over = true
+
+func _on_CoalTimer_timeout() -> void:
+	if Variables.is_game_over:
+		return
+
+	coal_count -= 1
+
+	if coal_count < 1:
+		Variables.is_game_over = true

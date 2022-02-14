@@ -27,6 +27,9 @@ func _ready() -> void:
 	_bang_sprite.visible = false
 
 func _physics_process(delta: float) -> void:
+	if Variables.is_game_over:
+		return
+
 	velocity.x = (Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")) * speed * delta
 	move_and_collide(velocity)
 

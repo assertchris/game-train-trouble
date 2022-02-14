@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://nodes/screens/screen.tscn" type="PackedScene" id=1]
 [ext_resource path="res://nodes/screens/play-screen.gd" type="Script" id=2]
@@ -13,15 +13,8 @@
 [ext_resource path="res://nodes/objects/bullet.tscn" type="PackedScene" id=11]
 [ext_resource path="res://nodes/objects/flame.tscn" type="PackedScene" id=12]
 [ext_resource path="res://nodes/objects/bandit.tscn" type="PackedScene" id=13]
-
-[sub_resource type="RectangleShape2D" id=3]
-extents = Vector2( 2.5, 5 )
-
-[sub_resource type="RectangleShape2D" id=4]
-extents = Vector2( 2.5, 5 )
-
-[sub_resource type="RectangleShape2D" id=5]
-extents = Vector2( 3.5, 5 )
+[ext_resource path="res://images/health-bar-background.png" type="Texture" id=14]
+[ext_resource path="res://images/game-over.png" type="Texture" id=15]
 
 [sub_resource type="RectangleShape2D" id=6]
 extents = Vector2( 12, 5 )
@@ -47,6 +40,7 @@ BulletScene = ExtResource( 11 )
 BucketScene = ExtResource( 9 )
 FlameScene = ExtResource( 12 )
 BanditScene = ExtResource( 13 )
+GunScene = ExtResource( 10 )
 
 [node name="DoodadPositions" type="Node2D" parent="." index="0"]
 __meta__ = {
@@ -96,10 +90,10 @@ __meta__ = {
 }
 
 [node name="Train" parent="." index="4" instance=ExtResource( 3 )]
-position = Vector2( 42.5, 25 )
+position = Vector2( 42, 23 )
 
 [node name="WheelBar" parent="." index="5" instance=ExtResource( 7 )]
-position = Vector2( 61, 32 )
+position = Vector2( 60, 30 )
 
 [node name="Interactables" type="Node2D" parent="." index="6"]
 __meta__ = {
@@ -107,75 +101,50 @@ __meta__ = {
 }
 
 [node name="Bucket" parent="Interactables" index="0" instance=ExtResource( 9 )]
-margin_left = 38.0
-margin_top = 20.0
-margin_right = 38.0
-margin_bottom = 20.0
+margin_left = 35.0
+margin_top = 16.0
+margin_right = 41.0
+margin_bottom = 21.0
 
 [node name="Gun" parent="Interactables" index="1" instance=ExtResource( 10 )]
 margin_left = 18.0
-margin_top = 19.0
+margin_top = 17.0
 margin_right = 18.0
-margin_bottom = 19.0
+margin_bottom = 17.0
 
 [node name="Player" parent="." index="7" instance=ExtResource( 4 )]
-position = Vector2( 53, 19 )
+position = Vector2( 51.5, 17 )
 
 [node name="Areas" type="Node2D" parent="." index="8"]
 __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="EngineArea" type="Area2D" parent="Areas" index="0"]
-visible = false
-position = Vector2( 55, 19 )
-
-[node name="Collider" type="CollisionShape2D" parent="Areas/EngineArea" index="0"]
-position = Vector2( 1, 0 )
-shape = SubResource( 3 )
-
-[node name="WaterArea" type="Area2D" parent="Areas" index="1"]
-visible = false
-position = Vector2( 37, 19 )
-
-[node name="Collider" type="CollisionShape2D" parent="Areas/WaterArea" index="0"]
-position = Vector2( -0.5, 0 )
-shape = SubResource( 4 )
-
-[node name="AmmoArea" type="Area2D" parent="Areas" index="2"]
-visible = false
-position = Vector2( 13, 19 )
-
-[node name="Collider" type="CollisionShape2D" parent="Areas/AmmoArea" index="0"]
-position = Vector2( -1.5, 0 )
-shape = SubResource( 5 )
-
-[node name="LeftArea" type="Area2D" parent="Areas" index="3"]
-visible = false
+[node name="LeftArea" type="Area2D" parent="Areas" index="0"]
 position = Vector2( 13, 19 )
 collision_layer = 0
 
 [node name="Collider" type="CollisionShape2D" parent="Areas/LeftArea" index="0"]
+position = Vector2( 0, -2 )
 shape = SubResource( 6 )
 
-[node name="MiddleArea" type="Area2D" parent="Areas" index="4"]
-visible = false
+[node name="MiddleArea" type="Area2D" parent="Areas" index="1"]
 position = Vector2( 37, 19 )
 collision_layer = 0
 
 [node name="Collider" type="CollisionShape2D" parent="Areas/MiddleArea" index="0"]
+position = Vector2( 0, -2 )
 shape = SubResource( 7 )
 
-[node name="RightArea" type="Area2D" parent="Areas" index="5"]
-visible = false
+[node name="RightArea" type="Area2D" parent="Areas" index="2"]
 position = Vector2( 63, 19 )
 collision_layer = 0
 
 [node name="Collider" type="CollisionShape2D" parent="Areas/RightArea" index="0"]
-position = Vector2( -0.5, 0 )
+position = Vector2( -1, -2 )
 shape = SubResource( 8 )
 
-[node name="LeftWall" type="StaticBody2D" parent="Areas" index="6"]
+[node name="LeftWall" type="StaticBody2D" parent="Areas" index="3"]
 visible = false
 position = Vector2( 7, 12 )
 
@@ -185,7 +154,7 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Right Wall" type="StaticBody2D" parent="Areas" index="7"]
+[node name="Right Wall" type="StaticBody2D" parent="Areas" index="4"]
 visible = false
 position = Vector2( 60, 12 )
 
@@ -205,12 +174,132 @@ __meta__ = {
 
 [node name="Ammo" type="HBoxContainer" parent="Interface" index="0"]
 margin_left = 3.0
-margin_top = 4.0
+margin_top = 2.0
 margin_right = 27.0
-margin_bottom = 10.0
+margin_bottom = 7.0
+custom_constants/separation = 0
+alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Bullet1" parent="Interface/Ammo" index="0" instance=ExtResource( 11 )]
+margin_left = 0.0
+margin_top = 0.0
+margin_right = 4.0
+margin_bottom = 5.0
+
+[node name="Bullet2" parent="Interface/Ammo" index="1" instance=ExtResource( 11 )]
+margin_left = 4.0
+margin_top = 0.0
+margin_right = 8.0
+margin_bottom = 5.0
+
+[node name="Bullet3" parent="Interface/Ammo" index="2" instance=ExtResource( 11 )]
+margin_left = 8.0
+margin_top = 0.0
+margin_right = 12.0
+margin_bottom = 5.0
+
+[node name="Bullet4" parent="Interface/Ammo" index="3" instance=ExtResource( 11 )]
+margin_left = 12.0
+margin_top = 0.0
+margin_right = 16.0
+margin_bottom = 5.0
+
+[node name="Bullet5" parent="Interface/Ammo" index="4" instance=ExtResource( 11 )]
+margin_left = 16.0
+margin_top = 0.0
+margin_right = 20.0
+margin_bottom = 5.0
+
+[node name="Bullet6" parent="Interface/Ammo" index="5" instance=ExtResource( 11 )]
+margin_left = 20.0
+margin_top = 0.0
+margin_right = 24.0
+margin_bottom = 5.0
+
+[node name="Water" type="HBoxContainer" parent="Interface" index="1"]
+margin_left = 30.0
+margin_top = 2.0
+margin_right = 48.0
+margin_bottom = 7.0
+custom_constants/separation = 0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Bucket1" parent="Interface/Water" index="0" instance=ExtResource( 9 )]
+margin_left = 0.0
+margin_top = 0.0
+margin_right = 6.0
+margin_bottom = 5.0
+
+[node name="Bucket2" parent="Interface/Water" index="1" instance=ExtResource( 9 )]
+margin_left = 6.0
+margin_top = 0.0
+margin_right = 12.0
+margin_bottom = 5.0
+
+[node name="Bucket3" parent="Interface/Water" index="2" instance=ExtResource( 9 )]
+margin_left = 12.0
+margin_top = 0.0
+margin_right = 18.0
+margin_bottom = 5.0
+
+[node name="Coal" type="HBoxContainer" parent="Interface" index="2"]
+margin_left = 53.0
+margin_top = 2.0
+margin_right = 71.0
+margin_bottom = 7.0
+custom_constants/separation = 0
+alignment = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Flame1" parent="Interface/Coal" index="0" instance=ExtResource( 12 )]
+margin_left = 0.0
+margin_top = 0.0
+margin_right = 6.0
+margin_bottom = 5.0
+
+[node name="Flame2" parent="Interface/Coal" index="1" instance=ExtResource( 12 )]
+margin_left = 6.0
+margin_top = 0.0
+margin_right = 12.0
+margin_bottom = 5.0
+
+[node name="Flame3" parent="Interface/Coal" index="2" instance=ExtResource( 12 )]
+margin_left = 12.0
+margin_top = 0.0
+margin_right = 18.0
+margin_bottom = 5.0
+
+[node name="HealthBar" type="TextureRect" parent="Interface" index="3"]
+margin_top = 33.0
+margin_right = 84.0
+margin_bottom = 37.0
+texture = ExtResource( 14 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Percentage" type="ColorRect" parent="Interface/HealthBar" index="0"]
+margin_left = 3.0
+margin_top = 1.0
+margin_right = 81.0
+margin_bottom = 3.0
+color = Color( 0.262745, 0.321569, 0.239216, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GameOver" type="TextureRect" parent="Interface" index="4"]
+visible = false
+margin_right = 84.0
+margin_bottom = 48.0
+texture = ExtResource( 15 )
 
 [node name="Timers" type="Node" parent="." index="10"]
 
@@ -233,12 +322,14 @@ autostart = true
 [node name="BanditShootTimer" type="Timer" parent="Timers" index="4"]
 wait_time = 3.0
 
-[connection signal="body_entered" from="Areas/EngineArea" to="." method="_on_EngineArea_body_entered"]
-[connection signal="body_exited" from="Areas/EngineArea" to="." method="_on_EngineArea_body_exited"]
-[connection signal="body_entered" from="Areas/WaterArea" to="." method="_on_WaterArea_body_entered"]
-[connection signal="body_exited" from="Areas/WaterArea" to="." method="_on_WaterArea_body_exited"]
-[connection signal="body_entered" from="Areas/AmmoArea" to="." method="_on_AmmoArea_body_entered"]
-[connection signal="body_exited" from="Areas/AmmoArea" to="." method="_on_AmmoArea_body_exited"]
+[node name="WaterTimer" type="Timer" parent="Timers" index="5"]
+wait_time = 20.0
+autostart = true
+
+[node name="CoalTimer" type="Timer" parent="Timers" index="6"]
+wait_time = 15.0
+autostart = true
+
 [connection signal="body_entered" from="Areas/LeftArea" to="." method="_on_LeftArea_body_entered"]
 [connection signal="body_exited" from="Areas/LeftArea" to="." method="_on_LeftArea_body_exited"]
 [connection signal="body_entered" from="Areas/MiddleArea" to="." method="_on_MiddleArea_body_entered"]
@@ -250,3 +341,5 @@ wait_time = 3.0
 [connection signal="timeout" from="Timers/InterfaceTimer" to="." method="_on_InterfaceTimer_timeout"]
 [connection signal="timeout" from="Timers/BanditTimer" to="." method="_on_BanditTimer_timeout"]
 [connection signal="timeout" from="Timers/BanditShootTimer" to="." method="_on_BanditShootTimer_timeout"]
+[connection signal="timeout" from="Timers/WaterTimer" to="." method="_on_WaterTimer_timeout"]
+[connection signal="timeout" from="Timers/CoalTimer" to="." method="_on_CoalTimer_timeout"]

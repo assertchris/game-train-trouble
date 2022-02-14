@@ -18,7 +18,8 @@ carrying_bucket_texture = ExtResource( 3 )
 carrying_gun_texture = ExtResource( 4 )
 
 [node name="BangSprite" type="Sprite" parent="."]
-position = Vector2( 15, 0 )
+visible = false
+position = Vector2( 15, 1 )
 texture = ExtResource( 5 )
 
 [node name="Sprite" type="Sprite" parent="."]
